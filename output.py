@@ -9,6 +9,7 @@ output to csv - done
 '''
 import pandas as pd
 import os
+import json
 
 
 class output():
@@ -27,12 +28,11 @@ class output():
         
         self.df.to_csv(f'{self._file_name}.csv', index=False)
         print(f'Emails and links saved to {os.getcwd()} as {self._file_name}.csv')
-
-
+    
 if __name__ == '__main__':
 	o = output([
         {'Email(s)': 'stuff', 'Link': 'bla bla', 'Name': 'Duke', 'Keywords': 'ha, na, ma'},
         {'Email(s)': 'hellothere', 'Link': 'hahahaha', 'Name': 'Georgia Tech', 'Keywords': 'ha, na, ma'},
         {'Email(s)': 'hello there how are you', 'Link': '2e98r232', 'Name': 'NC State', 'Keywords': 'ha, na, ma'}
         ])
-	o.to_csv('thing.csv')
+    # o.to_csv('thing.csv')
