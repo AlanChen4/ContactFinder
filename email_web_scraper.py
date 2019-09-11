@@ -1,3 +1,4 @@
+import googlesearch
 import json
 import re
 import requests
@@ -10,10 +11,19 @@ class email_scraper():
 	def __init__(self):
 		self.session = requests.Session()
 
-		self._website_links = ['https://gobblerconnect.vt.edu/engage/', 'https://gatech.campuslabs.com/engage/', 'https://wcu.campuslabs.com/engage/']
+		self._website_links = []
 		self._keywords = ['engineer']
 		
 		self._master_list = []
+
+
+	def find_root_site(self, uni_name):
+		'''tries to find if uni is involved in campuslabs'''
+		query = uni_name + 'campus labs'
+		search_results = googlesearch.search(query, tld="co.in", num=3, stop=1, pause=1)
+		for result in search_results:
+			if "campuslabs" in result:
+				self._website_links.append(result)
 
 
 	def begin_search(self):
@@ -29,8 +39,8 @@ class email_scraper():
 			self.match_keywords(organizations=organizations, root_site=self._website_links[site_index])
 
 		# debug stuff
-		for i in self._master_list:
-			print(i)
+		for index, address in enumerate(self._master_list):
+			print('[{}] {}'.format(index+1, address))
 
 
 	def get_organizations(self, link):
@@ -65,4 +75,5 @@ class email_scraper():
 
 if __name__ == '__main__':
 	e_s = email_scraper()
+	e_s.find_root_site('georgia tech')
 	e_s.begin_search()
