@@ -33,17 +33,6 @@ class email_scraper():
 		# debug stuff
 		for index, address in enumerate(self._master_list):
 			print('[{}] {}'.format(index+1, address))
-
-	def get_colleges(self):
-		''' return list of ~7000 colleges to scrape'''
-		colleges = []
-        with open('data/colleges.txt', 'r') as c:
-        	unfiltered_colleges = c.readlines()
-
-        for i in unfiltered_colleges:
-            colleges.append(i.rstrip('\n'))
-
-		return colleges
 		
 	def get_organizations(self, link):
 		''' finds links within the website using requests made to the api'''
