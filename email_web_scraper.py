@@ -12,7 +12,8 @@ class email_scraper():
 	def __init__(self):
 		self.session = requests.Session()
 
-		self._website_links = []
+		self._website_links = ['https://alamo.campuslabs.com/engage', 'https://uab.campuslabs.com/engage/event/4825622', 'https://oakwood.campuslabs.com/engage/organization/oakwood-university', 'https://olemiss.campuslabs.com/engage/event/4726382', 'https://uaa.campuslabs.com/engage/', 'https://www.campuslabs.com/technology/', 'https://bsc.campuslabs.com/engage/', 'https://www.campuslabs.com/about-us/member-campuses/', 'http://www.talladega.edu/joomla25/campuslabs/', 'https://asu.campuslabs.com/engage?alert-success=Welcome+to+our+new+site.+Use+the+search+to+find+the+organization+that+you+are+interested+in.', 'https://arizona.campuslabs.com/engage/', 'https://www.campuslabs.com/', 'https://ua.campuslabs.com/engage/', 'https://auburn.campuslabs.com/engage/', 'https://uab.campuslabs.com/engage/']
+
 		self._keywords = ['engineer']
 		
 		self._master_list = []
@@ -23,7 +24,7 @@ class email_scraper():
 		uni_list = college.COLLEGES
 
 		for uni_index, uni in enumerate(uni_list):
-			if uni_index < 7:
+			if uni_index < 100:
 				print('[SEARCHING][{}]'.format(uni_index+1))
 				self.find_root_site(uni)
 
@@ -43,6 +44,7 @@ class email_scraper():
 
 	def begin_search(self):
 		'''starts the scraper, assumes that keywords and links are loaded properly'''
+		self._website_links = list(set(self._website_links))
 		print(self._website_links)
 
 		self._organization_list = []	
@@ -71,7 +73,10 @@ class email_scraper():
 		if 199 < api_exists.status_code < 300:
 			try:
 				organization_list = json.loads(api_exists.text)['value']
-
+				
+				# TODO: this doesn't work; fix it
+				# self.output_info(organization_list)
+				
 			# TODO: sometimes there's an error raised here, idk why
 			except json.decoder.JSONDecodeError:
 				print('[OKAY] json error')
@@ -87,16 +92,28 @@ class email_scraper():
 		'''goes through organization list and returns those that match the keyword search'''
 		
 		# TODO: add positive/negative keyword feature
-		for club in organizations:
-			organization_name = club['Name'].lower()
-			for k in self._keywords:
-					if k in organization_name:
-						organization_contact = club['WebsiteKey']
-						organization_contact = root_site + 'organization/{}/contact'.format(organization_contact)
-						self._master_list.append(organization_contact)
-						continue
+		try:
+			for club in organizations:
+				organization_name = club['Name'].lower()
+				for k in self._keywords:
+						if k in organization_name:
+							organization_contact = club['WebsiteKey']
+							organization_contact = root_site + 'organization/{}/contact'.format(organization_contact)
+							self._master_list.append(organization_contact)
+							continue
+		except TypeError:
+			print('[OKAY] json error continuation')
+
+
+	def output_info(self, data_value):
+		with open('data/output.json') as db:
+			print(db.read())
+			db = json.loads(db.read())	
+			db.append(data_value)
+			json.dump(db, db)
 		
 
 if __name__ == '__main__':
 	e_s = email_scraper()
-	e_s.start_scraping()
+	e_s.begin_search()
+	# e_s.start_scraping()
