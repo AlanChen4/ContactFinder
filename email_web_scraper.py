@@ -31,8 +31,8 @@ class email_scraper():
 			self.match_keywords(organizations)
 
 		# debug stuff
-		for i in self._master_list:
-			print(i)
+		for index, address in enumerate(self._master_list):
+			print('[{}] {}'.format(index+1, address))
 
 	def get_colleges(self):
 		''' return list of ~7000 colleges to scrape'''
@@ -75,4 +75,5 @@ class email_scraper():
 
 if __name__ == '__main__':
 	e_s = email_scraper()
+	e_s.find_root_site('georgia tech')
 	e_s.begin_search()
