@@ -1,12 +1,3 @@
-'''
-input keywords
-
-output sites after search
-
-output to csv - done
-
-
-'''
 import pandas as pd
 import os
 
@@ -14,7 +5,7 @@ import os
 class output():
     '''filters through links and emails and exports as csv'''
 
-    # Initialize data frame with data that has links, emails, keywords, etc.
+    # Initialize data frame with data dictionary that has links, emails, keywords, etc.
     def __init__(self, data):
         self.df = pd.DataFrame(data)
 
