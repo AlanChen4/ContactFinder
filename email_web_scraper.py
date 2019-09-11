@@ -1,5 +1,5 @@
+import httplib2
 import json
-import re
 import requests
 
 from bs4 import BeautifulSoup, SoupStrainer
@@ -9,13 +9,15 @@ class email_scraper():
 
 	def __init__(self):
 		self.session = requests.Session()
+		self.http = httplib2.Http()
+		# self.status, self.response = self.http.request('https://gobblerconnect.vt.edu/')
 
-		self._website_links = ['https://gobblerconnect.vt.edu/engage/', 'https://gatech.campuslabs.com/engage/', 'https://wcu.campuslabs.com/engage/']
-		self._keywords = ['engineer']
+		self._website_links = ['https://gobblerconnect.vt.edu/', 'https://gatech.campuslabs.com/engage/', 'https://wcu.campuslabs.com/engage/']
+		self._website_links = ['https://gobblerconnect.vt.edu/'] # delete this later
 		
+		self._keywords = ['earth', 'engineer']
 		self._master_list = []
-
-
+	
 	def begin_search(self):
 		'''starts the scraper, assumes that keywords and links are loaded properly'''
 		self._organization_list = []	
@@ -25,14 +27,24 @@ class email_scraper():
 			self._organization_list.append(self.get_organizations(link))
 
 		# obtains all matched keyword organizations
-		for site_index, organizations in enumerate(self._organization_list):
-			self.match_keywords(organizations=organizations, root_site=self._website_links[site_index])
+		for organizations in self._organization_list:
+			self.match_keywords(organizations)
 
 		# debug stuff
 		for i in self._master_list:
 			print(i)
 
+	def get_colleges(self):
+		''' return list of ~7000 colleges to scrape'''
+		colleges = []
+        with open('data/colleges.txt', 'r') as c:
+        	unfiltered_colleges = c.readlines()
 
+        for i in unfiltered_colleges:
+            colleges.append(i.rstrip('\n'))
+
+		return colleges
+		
 	def get_organizations(self, link):
 		''' finds links within the website using requests made to the api'''
 		try:
@@ -49,18 +61,16 @@ class email_scraper():
 			print('[DNE]', link)
 
 
-	def match_keywords(self, organizations, root_site):
+	def match_keywords(self, organizations):
 		'''goes through organization list and returns those that match the keyword search'''
 		
 		# TODO: add keyword feature
-		for club in organizations:
-			organization_name = club['Name'].lower()
+		for o in organizations:
+			organization_name = o['Name'].lower()
 			for k in self._keywords:
-					if k in organization_name:
-						organization_contact = club['WebsiteKey']
-						organization_contact = root_site + 'organization/{}/contact'.format(organization_contact)
-						self._master_list.append(organization_contact)
-						continue
+				if k in organization_name:
+					self._master_list.append(organization_name)
+					continue
 		
 
 if __name__ == '__main__':
