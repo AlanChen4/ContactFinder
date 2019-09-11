@@ -1,4 +1,4 @@
-import httplib2
+import googlesearch
 import json
 import requests
 
@@ -11,12 +11,10 @@ class email_scraper():
 
 	def __init__(self):
 		self.session = requests.Session()
-		self.http = httplib2.Http()
 
-		self._website_links = ['https://uab.campuslabs.com/engage/']
+		self._website_links = []
 		self._keywords = ['engineer']
 		
-		self._keywords = ['earth', 'engineer']
 		self._master_list = []
 
 
@@ -25,12 +23,11 @@ class email_scraper():
 		uni_list = college.COLLEGES
 
 		for uni_index, uni in enumerate(uni_list):
-			if uni_index < 3:
+			if uni_index < 7:
 				print('[SEARCHING][{}]'.format(uni_index+1))
 				self.find_root_site(uni)
 
 		self.begin_search()
-
 
 
 	def find_root_site(self, uni_name):
@@ -39,13 +36,15 @@ class email_scraper():
 		search_results = googlesearch.search(query, num=3, stop=1, pause=1)
 		for result in search_results:
 			if "campuslabs" in result:
-				result.replace('organizations', '')
+				result = result.replace('organizations', '')
 				self._website_links.append(result)
 				print('[ROOT SITE FOUND]', uni_name)
 
 
 	def begin_search(self):
 		'''starts the scraper, assumes that keywords and links are loaded properly'''
+		print(self._website_links)
+
 		self._organization_list = []	
 
 		# obtains all organization links from url
@@ -53,13 +52,14 @@ class email_scraper():
 			self._organization_list.append(self.get_organizations(link))
 
 		# obtains all matched keyword organizations
-		for organizations in self._organization_list:
-			self.match_keywords(organizations)
-
+		for site_index, organizations in enumerate(self._organization_list):
+			self.match_keywords(organizations=organizations, root_site=self._website_links[site_index])
+		
 		# debug stuff
 		for index, address in enumerate(self._master_list):
 			print('[{}] {}'.format(index+1, address))
 		
+
 	def get_organizations(self, link):
 		''' finds links within the website using requests made to the api'''
 		try:
@@ -69,23 +69,32 @@ class email_scraper():
 			return
 
 		if 199 < api_exists.status_code < 300:
-			organization_list = json.loads(api_exists.text)['value']
+			try:
+				organization_list = json.loads(api_exists.text)['value']
+
+			# TODO: sometimes there's an error raised here, idk why
+			except json.decoder.JSONDecodeError:
+				print('[OKAY] json error')
+				return {}
+
 			print('[SUCCESS]', '{} links found for {}.'.format(len(organization_list), link))
 			return organization_list
 		else:
 			print('[DNE]', link)
 
 
-	def match_keywords(self, organizations):
+	def match_keywords(self, organizations, root_site):
 		'''goes through organization list and returns those that match the keyword search'''
 		
-		# TODO: add keyword feature
-		for o in organizations:
-			organization_name = o['Name'].lower()
+		# TODO: add positive/negative keyword feature
+		for club in organizations:
+			organization_name = club['Name'].lower()
 			for k in self._keywords:
-				if k in organization_name:
-					self._master_list.append(organization_name)
-					continue
+					if k in organization_name:
+						organization_contact = club['WebsiteKey']
+						organization_contact = root_site + 'organization/{}/contact'.format(organization_contact)
+						self._master_list.append(organization_contact)
+						continue
 		
 
 if __name__ == '__main__':
