@@ -5,25 +5,42 @@ import requests
 
 from bs4 import BeautifulSoup, SoupStrainer
 
+from data import college
+
 class email_scraper():
 	'''finds emails on given webpage'''
 
 	def __init__(self):
 		self.session = requests.Session()
 
-		self._website_links = []
+		self._website_links = ['https://uab.campuslabs.com/engage/']
 		self._keywords = ['engineer']
 		
 		self._master_list = []
 
 
+	def start_scraping(self):
+		'''starts scraping process for each uni in the uni list'''
+		uni_list = college.COLLEGES
+
+		for uni_index, uni in enumerate(uni_list):
+			if uni_index < 3:
+				print('[SEARCHING][{}]'.format(uni_index+1))
+				self.find_root_site(uni)
+
+		self.begin_search()
+
+
+
 	def find_root_site(self, uni_name):
 		'''tries to find if uni is involved in campuslabs'''
 		query = uni_name + 'campus labs'
-		search_results = googlesearch.search(query, tld="co.in", num=3, stop=1, pause=1)
+		search_results = googlesearch.search(query, num=3, stop=1, pause=1)
 		for result in search_results:
 			if "campuslabs" in result:
+				result.replace('organizations', '')
 				self._website_links.append(result)
+				print('[ROOT SITE FOUND]', uni_name)
 
 
 	def begin_search(self):
@@ -75,5 +92,4 @@ class email_scraper():
 
 if __name__ == '__main__':
 	e_s = email_scraper()
-	e_s.find_root_site('georgia tech')
-	e_s.begin_search()
+	e_s.start_scraping()
