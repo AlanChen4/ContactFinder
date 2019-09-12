@@ -25,6 +25,3 @@ if __name__ == '__main__':
         {'Email(s)': 'hellothere', 'Link': 'hahahaha', 'Name': 'Georgia Tech', 'Keywords': 'ha, na, ma'},
         {'Email(s)': 'hello there how are you', 'Link': '2e98r232', 'Name': 'NC State', 'Keywords': 'ha, na, ma'}
         ])
-    
-    # Uncomment line below to test what output csv is like
-    #o.to_csv('thing.csv')

@@ -5,6 +5,8 @@ import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
 from data import college
+from output import output as csv_helper
+
 
 class email_scraper():
 	'''finds emails on given webpage'''
@@ -22,7 +24,7 @@ class email_scraper():
 		uni_list = college.COLLEGES
 
 		for uni_index, uni in enumerate(uni_list):
-			if uni_index < 7:
+			if uni_index < 50:
 				print('[SEARCHING][{}]'.format(uni_index+1))
 				self.find_root_site(uni)
 
@@ -56,8 +58,11 @@ class email_scraper():
 			self.match_keywords(organizations=organizations, root_site=self._website_links[site_index])
 		
 		# prints all addresses
-		for index, address in enumerate(self._master_list):
-			print('[{}] {}'.format(index+1, address))
+		for index, org_info in enumerate(self._master_list):
+			print('[{}] {}'.format(index+1, org_info))
+
+		# convert to .csv for easier viewing
+		self.output_to_csv(self._master_list)
 		
 
 	def get_organizations(self, link):
@@ -69,10 +74,14 @@ class email_scraper():
 			return
 
 		if 199 < api_exists.status_code < 300:
-			organization_list = json.loads(api_exists.text)['value']
-				
-			print('[SUCCESS]', '{} links found for {}.'.format(len(organization_list), link))
-			return organization_list
+			try:
+				organization_list = json.loads(api_exists.text)['value']
+					
+				print('[SUCCESS]', '{} links found for {}.'.format(len(organization_list), link))
+				return organization_list
+			except json.decoder.JSONDecodeError:
+				# TODO: figure out why this happens
+				print('[OKAY] JSON error')
 		else:
 			print('[DNE]', link)
 
@@ -88,8 +97,8 @@ class email_scraper():
 						if k in organization_name:
 							organization_contact = club['WebsiteKey']
 							organization_contact = root_site + 'organization/{}/contact'.format(organization_contact)
-							self._master_list.append(organization_contact)
-							continue
+							organization_info = {'name':organization_name, 'contact':organization_contact}
+							self._master_list.append(organization_info)
 		except TypeError:
 			print('[OKAY] json error continuation')
 
@@ -98,6 +107,13 @@ class email_scraper():
 		'''output file to json format'''
 		with open('data/output.json', 'r+') as output_file:
 			json.dump(data_value, output_file)
+
+
+	def output_to_csv(self, data):
+		'''converts to dictionaries and then updates to .csv'''
+		c = csv_helper(data)
+		c.to_csv('test1.csv')
+
 		
 
 if __name__ == '__main__':
