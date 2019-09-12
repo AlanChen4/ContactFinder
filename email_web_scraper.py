@@ -11,11 +11,9 @@ class email_scraper():
 
 	def __init__(self):
 		self.session = requests.Session()
-
-		self._website_links = ['https://alamo.campuslabs.com/engage', 'https://uab.campuslabs.com/engage/event/4825622', 'https://oakwood.campuslabs.com/engage/organization/oakwood-university', 'https://olemiss.campuslabs.com/engage/event/4726382', 'https://uaa.campuslabs.com/engage/', 'https://www.campuslabs.com/technology/', 'https://bsc.campuslabs.com/engage/', 'https://www.campuslabs.com/about-us/member-campuses/', 'http://www.talladega.edu/joomla25/campuslabs/', 'https://asu.campuslabs.com/engage?alert-success=Welcome+to+our+new+site.+Use+the+search+to+find+the+organization+that+you+are+interested+in.', 'https://arizona.campuslabs.com/engage/', 'https://www.campuslabs.com/', 'https://ua.campuslabs.com/engage/', 'https://auburn.campuslabs.com/engage/', 'https://uab.campuslabs.com/engage/']
-
+		self._website_links = []
+		self._organization_list = []	
 		self._keywords = ['engineer']
-		
 		self._master_list = []
 
 
@@ -24,7 +22,7 @@ class email_scraper():
 		uni_list = college.COLLEGES
 
 		for uni_index, uni in enumerate(uni_list):
-			if uni_index < 100:
+			if uni_index < 7:
 				print('[SEARCHING][{}]'.format(uni_index+1))
 				self.find_root_site(uni)
 
@@ -39,25 +37,25 @@ class email_scraper():
 			if "campuslabs" in result:
 				result = result.replace('organizations', '')
 				self._website_links.append(result)
-				print('[ROOT SITE FOUND]', uni_name)
+				print('\t|\n\t-->[ROOT SITE FOUND]', uni_name)
 
 
 	def begin_search(self):
 		'''starts the scraper, assumes that keywords and links are loaded properly'''
 		self._website_links = list(set(self._website_links))
-		print(self._website_links)
-
-		self._organization_list = []	
 
 		# obtains all organization links from url
 		for link in self._website_links:
 			self._organization_list.append(self.get_organizations(link))
 
+		# save all info to output.json for future data access
+		self.output_to_json(self._organization_list)
+
 		# obtains all matched keyword organizations
 		for site_index, organizations in enumerate(self._organization_list):
 			self.match_keywords(organizations=organizations, root_site=self._website_links[site_index])
 		
-		# debug stuff
+		# prints all addresses
 		for index, address in enumerate(self._master_list):
 			print('[{}] {}'.format(index+1, address))
 		
@@ -71,17 +69,8 @@ class email_scraper():
 			return
 
 		if 199 < api_exists.status_code < 300:
-			try:
-				organization_list = json.loads(api_exists.text)['value']
+			organization_list = json.loads(api_exists.text)['value']
 				
-				# TODO: this doesn't work; fix it
-				# self.output_info(organization_list)
-				
-			# TODO: sometimes there's an error raised here, idk why
-			except json.decoder.JSONDecodeError:
-				print('[OKAY] json error')
-				return {}
-
 			print('[SUCCESS]', '{} links found for {}.'.format(len(organization_list), link))
 			return organization_list
 		else:
@@ -105,15 +94,12 @@ class email_scraper():
 			print('[OKAY] json error continuation')
 
 
-	def output_info(self, data_value):
-		with open('data/output.json') as db:
-			print(db.read())
-			db = json.loads(db.read())	
-			db.append(data_value)
-			json.dump(db, db)
+	def output_to_json(self, data_value):
+		'''output file to json format'''
+		with open('data/output.json', 'r+') as output_file:
+			json.dump(data_value, output_file)
 		
 
 if __name__ == '__main__':
 	e_s = email_scraper()
-	e_s.begin_search()
-	# e_s.start_scraping()
+	e_s.start_scraping()
