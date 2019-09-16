@@ -5,4 +5,4 @@ This is a web scraper which utilizes REST API and Pandas framework to collect co
 To install dependencies type `pip install -r requirements.txt` into terminal or command line
 
 ## Run
-Run `contact_web_scraper.py` to run the web scraper.
+Run `contact_web_scraper.py` to run the web scraper
