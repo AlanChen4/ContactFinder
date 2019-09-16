@@ -2,8 +2,6 @@ import googlesearch
 import json
 import requests
 
-from bs4 import BeautifulSoup, SoupStrainer
-
 from college_helper import college
 from output import output as csv_helper
 
@@ -15,7 +13,7 @@ class contact_scraper():
 		self.session = requests.Session()
 		self._website_links = []
 		self._organization_list = []	
-		self._keywords = ['engineer', 'environment', 'society']
+		self._keywords = ['engineer', 'environment', 'engineering', 'energy', 'green', 'renewable', 'solar']
 		self._master_list = []
 
 
@@ -24,7 +22,7 @@ class contact_scraper():
 		uni_list = college.COLLEGES
 
 		for uni_index, uni in enumerate(uni_list):
-			if uni_index < 6:
+			if uni_index < 500:
 				print('[SEARCHING][{}]'.format(uni_index+1))
 				self.find_root_site(uni)
 
@@ -33,13 +31,16 @@ class contact_scraper():
 
 	def find_root_site(self, uni_name):
 		'''tries to find if uni is involved in campuslabs'''
-		query = uni_name + 'campus labs'
-		search_results = googlesearch.search(query, num=3, stop=1, pause=1)
-		for result in search_results:
-			if "campuslabs" in result:
-				result = result.replace('organizations', '')
-				self._website_links.append(result)
-				print('\t|\n\t-->[ROOT SITE FOUND]', uni_name)
+		try:
+			query = uni_name + 'campus labs'
+			search_results = googlesearch.search(query, num=3, stop=1, pause=1)
+			for result in search_results:
+				if "campuslabs" in result:
+					result = result.replace('organizations', '')
+					self._website_links.append(result)
+					print('\t|\n\t-->[ROOT SITE FOUND]', uni_name)
+		except:
+			print('[ERROR] Remote disconnection, continuing...')
 
 
 	def begin_search(self):
